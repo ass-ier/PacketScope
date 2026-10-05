@@ -13,3 +13,5 @@ frontend/dist/
 .DS_Store
 artifacts/
 .playwright-mcp/
+backend/demo-data/
+.impeccable/hook.cache.json

@@ -4,8 +4,10 @@ import { useData } from '../hooks/useData';
 import { api } from '../lib/api';
 import { type Row } from '../types';
 import { Intelligence } from './Advanced';
+import { useReadOnly } from '../hooks/useReadOnly';
 
 function RuleEditor({ rule, onSaved }: { rule: Row; onSaved: () => void }) {
+  const readOnly = useReadOnly();
   const [config, setConfig] = useState(JSON.stringify(rule.config, null, 2));
   const [enabled, setEnabled] = useState(Boolean(rule.enabled));
   const [busy, setBusy] = useState(false);
@@ -21,9 +23,9 @@ function RuleEditor({ rule, onSaved }: { rule: Row; onSaved: () => void }) {
   }
   return <details className="rule"><summary>{String(rule.name)} <Badge value={rule.enabled ? 'Enabled' : 'Disabled'} /></summary>
     <p>{String(rule.description)}</p><p className="footnote">{String(rule.logic)}</p>
-    <label className="check"><input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} />Enabled for future analyses</label>
-    <label>Threshold configuration (JSON)<textarea className="mono" rows={8} value={config} onChange={e => setConfig(e.target.value)} /></label>
-    {error && <p className="error" role="alert">{error}</p>}<button disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save rule'}</button>
+    <label className="check"><input type="checkbox" checked={enabled} disabled={readOnly} onChange={e => setEnabled(e.target.checked)} />Enabled for future analyses</label>
+    <label>Threshold configuration (JSON)<textarea className="mono" rows={8} value={config} readOnly={readOnly} onChange={e => setConfig(e.target.value)} /></label>
+    {error && <p className="error" role="alert">{error}</p>}{!readOnly && <button disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save rule'}</button>}
   </details>;
 }
 export default function Settings() {

@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
+    "configure:render": "node scripts/configure-render.mjs",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=../artifacts/pw-browsers playwright test"
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=../artifacts/pw-browsers playwright test",
+    "test:demo": "PLAYWRIGHT_BROWSERS_PATH=../artifacts/pw-browsers playwright test --config playwright.demo.config.ts",
+    "test:deploy-config": "node --test scripts/configure-render.test.mjs"
   },
   "dependencies": {
     "@xyflow/react": "12.6.2",

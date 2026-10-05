@@ -73,3 +73,25 @@ OS-isolated hostile-file sandboxes. The cooperative timeout cannot interrupt a
 single stuck native/library call. Small bounded input slices, derived-record
 budgets and explicit unsupported formats reduce exposure; process isolation is
 a documented next hardening step before accepting arbitrary Internet uploads.
+
+## Public synthetic demo profile
+
+The optional Vercel/Render preview is a separate, read-only profile, started with
+`backend/demo.py`. It generates only repository-owned synthetic fixtures before
+serving traffic. Existing unmarked databases are refused. A manifest verifies
+all relational rows and stored capture/report/extraction hashes on reuse, so an
+accidentally mixed or edited dataset fails startup instead of being published.
+This guards configuration mistakes; it is not a signature against a malicious
+OS administrator who can change both the database and its manifest.
+
+All non-GET/HEAD/OPTIONS requests are rejected before body parsing in demo mode,
+and external intelligence cannot be enabled. No analysis worker or OpenAPI UI
+is exposed in that profile. Capture comparison uses a read-only GET endpoint.
+The frontend explicitly labels synthetic content and removes mutation actions.
+The Docker container runs as non-root and only approved source files enter its
+build context. Vercel forwards same-origin `/api` traffic to the configured
+Render origin; it does not grant anonymous editing access.
+
+Only this preloaded sample profile is intended for a public portfolio preview.
+It adds no authentication to ordinary local mode. Never point demo mode at a
+real evidence directory or use it as an Internet-facing upload service.

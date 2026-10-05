@@ -3,8 +3,10 @@ import { State, Empty } from '../components/Common';
 import { useData } from '../hooks/useData';
 import { date, post } from '../lib/api';
 import { type Row } from '../types';
+import { useReadOnly } from '../hooks/useReadOnly';
 
 export default function Reports({ captureId }: { captureId?: string }) {
+  const readOnly = useReadOnly();
   const [refresh, setRefresh] = useState(0);
   const reports = useData<Row[]>(`/reports${captureId ? `?capture_id=${captureId}` : ''}`, refresh);
   const cases = useData<Row[]>('/cases');
@@ -13,7 +15,8 @@ export default function Reports({ captureId }: { captureId?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   return <>
-    {captureId && <section className="panel padded"><h2>Export an evidence-backed investigation</h2>
+    {readOnly && <section className="panel padded"><h2>Pre-generated sample reports</h2><p>Download real PDF, Markdown, JSON and STIX reports from the synthetic captures. Report generation and edits are disabled in this shared preview.</p></section>}
+    {captureId && !readOnly && <section className="panel padded"><h2>Export an evidence-backed investigation</h2>
       <p>Reports preserve capture identity, observations, findings, evidence references, visibility limits and your selected case assessment.</p>
       <form onSubmit={e => { e.preventDefault(); setBusy(true); setError('');
         void post('/reports', { capture_id: captureId, format, case_id: caseId || null })

@@ -23,7 +23,7 @@ Browser tests use a separate auto-started/stopped server on 127.0.0.1:8766 and a
 ignored synthetic database at `artifacts/e2e-data`. The normal data directory is
 not touched. Repeated runs append their own clearly named synthetic cases.
 
-## Recorded acceptance
+## Original ten-phase acceptance
 
 The final suite includes **100 passing backend tests**, including **10 independent
 black-box acceptance cases**, and **2 passing Playwright tests**. The optional
@@ -143,3 +143,42 @@ inspection found and fixed a hash-navigation bug, a screen-reader-only element
 causing mobile overflow, and low secondary-text contrast. Browser workflows and
 axe checks were rerun after those fixes. Screenshots show actual synthetic
 investigations, not mockups.
+
+## Vercel/Render demo acceptance
+
+The deployment addition brings the suite to **114 backend tests**, including 14
+new demo checks. The original 100-case JUnit artifact remains historical; the
+full deployment run is `artifacts/backend-tests-with-demo.xml` (114 passed,
+0 failed/errors/skipped; independent fixture directory supplied).
+
+```sh
+cd backend
+PACKETSCOPE_ACCEPTANCE_FIXTURES=/absolute/path/to/acceptance-captures \
+  ../.venv/bin/pytest --junitxml=../artifacts/backend-tests-with-demo.xml
+cd ../frontend
+npm run build
+npm run test:deploy-config
+npm run test:demo
+npm run test:e2e
+```
+
+The demo test checks the actual 16-capture/324-packet analysis, all nine rule
+types, three cases, 64 reports and three extractable benign bodies. It verifies
+all public mutations fail without database changes, startup does not duplicate
+data, altered/personal datasets fail closed and external providers cannot be
+enabled. The browser suite adds one complete read-only demo workflow on isolated
+port 8767; both original writable-workflow/accessibility tests still pass.
+
+The Render-compatible Docker image was built for **Linux amd64** and run with
+512 MiB memory, one CPU, dropped capabilities and a non-root user. It became
+healthy with 16 captures, 52 capture-scoped hosts, 74 flows, 126 IOCs, nine
+findings, three cases, 64 reports and three files. An HTTP write was refused
+with 403. Observed idle memory was approximately 132 MiB; this is a local
+container measurement, not a Render latency guarantee.
+The installed Linux runtime package set was also audited directly from the
+container (including the Linux-only pinned `greenlet` dependency): no known
+vulnerabilities and no broken requirements were reported.
+
+The Vercel rewrite configurator is tested using Node's built-in test runner,
+including URL validation and preservation of security headers. No Vercel or
+Render account was provisioned and no repository was pushed by the agent.

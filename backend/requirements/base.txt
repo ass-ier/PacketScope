@@ -3,6 +3,7 @@ starlette==1.7.0
 uvicorn==0.54.0
 pydantic==2.13.5
 SQLAlchemy==2.0.41
+greenlet==3.5.6; platform_system == "Linux"
 alembic==1.16.1
 python-multipart==0.0.32
 dpkt==1.9.8

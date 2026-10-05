@@ -43,6 +43,24 @@ cd ../backend
 Open **http://127.0.0.1:8765/**. The backend serves the production React build.
 Interactive API documentation is at **http://127.0.0.1:8765/docs**.
 
+### Shareable live preview with sample data
+
+Use **Vercel for the frontend and Render for the backend**. The included
+`render.yaml`, Dockerfile and `frontend/vercel.json` support a read-only synthetic
+demo with **16 analyzed captures, 9 findings, 3 cases, 64 reports and 3 benign
+extracted files**. Render seeds everything automatically; no manual PCAP upload
+or database copy is required. See the [step-by-step deployment guide](docs/deployment.md).
+
+For the same seeded preview locally, after building the frontend:
+
+```sh
+cd backend
+PACKETSCOPE_DATA=../artifacts/live-demo ../.venv/bin/python demo.py
+```
+
+The public demo disables all mutations and external lookups. Keep the unrestricted
+analyst mode local; do not expose it publicly just by changing the bind address.
+
 Alembic upgrades the SQLite schema at startup. Data defaults to `backend/data`
 when launched as above. `PACKETSCOPE_DATA=/absolute/local/path` selects a different
 local evidence directory. Stop the server before copying that directory as a
@@ -185,15 +203,19 @@ The browser suite starts/stops its own isolated localhost server on port 8766 an
 uses `artifacts/e2e-data`, never your ordinary evidence directory. Generated
 captures, browser binaries, traces and databases stay under ignored `artifacts/`.
 
-The final verification includes **100 backend tests** (10 use independent,
-externally supplied synthetic acceptance captures), **2 Playwright workflows**,
+The current verification includes **114 backend tests** (10 use independent,
+externally supplied synthetic acceptance captures), **3 Playwright workflows**
+(run `npm run test:e2e` and `npm run test:demo`),
 strict TypeScript/build, dependency audits and desktop/mobile axe checks.
-Without the optional independent fixture directory, 90 tests pass and 10 are
+Without the optional independent fixture directory, 104 tests pass and 10 are
 explicitly skipped. [Exact commands, coverage and acceptance](docs/testing.md).
 
 The current full npm audit JSON and all-100-case JUnit verification are retained
 under `artifacts/`. An earlier pre-fix audit with eight high findings is preserved
 separately as `artifacts/npm-audit.pre-fix.json`; it is not the final audit result.
+The deployment addition's full 114-case result is separately recorded in
+`artifacts/backend-tests-with-demo.xml`; the original 100-case artifact is
+preserved as historical implementation evidence.
 
 ## Limitations and roadmap
 

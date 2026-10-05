@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: packetscope-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: PACKETSCOPE_DEMO
+        value: "true"
+      - key: PACKETSCOPE_EXTERNAL_ENABLED
+        value: "false"
+      - key: PACKETSCOPE_DATA
+        value: /app/demo-data
+      - key: PACKETSCOPE_BIND
+        value: 0.0.0.0

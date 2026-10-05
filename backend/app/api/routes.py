@@ -37,8 +37,8 @@ def require(db, model, entity_id):
 
 
 @router.get("/health")
-def health():
-    return {"status": "ok", "mode": "local", "version": "1.0.0"}
+def health(request: Request):
+    return {"status": "ok", "mode": "demo" if request.app.state.settings.demo_mode else "local", "version": "1.0.0"}
 
 
 @router.post("/captures", status_code=201)
@@ -69,7 +69,15 @@ def settings_info(request: Request):
             "max_stream_bytes": settings.max_stream_bytes, "analysis_timeout": settings.analysis_timeout,
             "max_pending_jobs": settings.max_pending_jobs, "max_captures": settings.max_captures,
             "max_total_packets": settings.max_total_packets, "max_derived_records": settings.max_derived_records,
-            "max_capture_storage_bytes": settings.max_storage_bytes, "external_enabled": provider_status()["external_enabled"]}
+            "max_capture_storage_bytes": settings.max_storage_bytes,
+            "demo_mode": settings.demo_mode, "read_only": settings.demo_mode,
+            "external_enabled": False if settings.demo_mode else provider_status()["external_enabled"]}
+
+
+@router.get("/comparison")
+def read_comparison(baseline_id: str = Query(..., min_length=36, max_length=36),
+                    comparison_id: str = Query(..., min_length=36, max_length=36), db=Depends(database)):
+    return compare_captures(CompareCreate(baseline_id=baseline_id, comparison_id=comparison_id), db)
 
 
 @router.get("/dashboard")
@@ -177,8 +185,14 @@ def reversescope(file_id: str, db=Depends(database)):
 
 
 @router.get("/intelligence/providers")
-def intel_providers():
-    return provider_status()
+def intel_providers(request: Request):
+    status = provider_status()
+    if request.app.state.settings.demo_mode:
+        status["external_enabled"] = False
+        status["notice"] = "External intelligence is disabled in the synthetic public demo; no reputation data is fabricated."
+        for provider in status["providers"]:
+            provider["enabled"] = False
+    return status
 
 
 @router.post("/iocs/{ioc_id}/lookup")

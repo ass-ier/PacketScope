@@ -12,6 +12,7 @@ import CapturePicker from './components/CapturePicker';
 import Attack from './pages/Attack';
 import { Compare, Files } from './pages/Advanced';
 import Reports from './pages/Reports';
+import { ReadOnlyContext } from './hooks/useReadOnly';
 
 const navigation = ['Dashboard', 'Captures', 'Hosts', 'Flows', 'DNS', 'HTTP', 'TLS', 'IOCs', 'Findings', 'Timeline', 'Network Graph', 'Cases', 'ATT&CK', 'Compare', 'Reports', 'Settings'];
 const slugFor = (name: string) => name === 'ATT&CK' ? 'attack' : name.toLowerCase().replaceAll(' ', '-');
@@ -22,7 +23,8 @@ export default function App() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [analysisRefresh, setAnalysisRefresh] = useState(0);
-  const runtime = useData<{ external_enabled: boolean }>('/settings');
+  const runtime = useData<{ external_enabled: boolean; demo_mode: boolean; read_only: boolean }>('/settings');
+  const readOnly = runtime.data?.read_only ?? true;
   const { data, loading, error: loadError } = useData<Dashboard>('/dashboard', refresh);
   useEffect(() => {
     const change = () => setRoute(location.hash.slice(2) || 'dashboard');
@@ -41,7 +43,7 @@ export default function App() {
   const [section, id, tab = 'overview'] = route.split('/');
   const isCapture = section === 'captures' && !!id;
   const title = navigation.find(n => slugFor(n) === section) || 'Evidence inspection';
-  return <div className="app">
+  return <ReadOnlyContext.Provider value={readOnly}><div className="app">
     <a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to investigation</a>
     <aside className="sidebar">
       <a className="brand" href="#/dashboard"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 14h6l3-8 5 16 3-8h5" /></svg>PacketScope</a>
@@ -50,7 +52,7 @@ export default function App() {
         const slug = slugFor(name);
         return <a key={name} href={`#/${slug}`} aria-current={route.split('/')[0] === slug ? 'page' : undefined}>{name}</a>;
       })}</nav>
-      <div className="local-state"><span className="dot" /> Local evidence storage<small>{runtime.data?.external_enabled ? 'External lookups opt-in' : 'External integrations off'}</small></div>
+      <div className="local-state"><span className="dot" />{runtime.data?.demo_mode ? 'Synthetic sample evidence' : 'Local evidence storage'}<small>{runtime.data?.external_enabled ? 'External lookups opt-in' : 'External integrations off'}</small></div>
     </aside>
     <main id="main" tabIndex={-1}>
       <header className="topbar"><span>Network forensics / {route.split('/')[0]}</span>
@@ -58,10 +60,13 @@ export default function App() {
           <input aria-label="Search all evidence" placeholder="Search IP, domain, port, case…" value={search} onChange={e => setSearch(e.target.value)} />
           <button>Search</button></form></header>
       <div className="page">
+        {runtime.data?.demo_mode && <div className="notice" role="note"><strong>Read-only live demo · synthetic data</strong>
+          <p>Explore real analysis of generated captures, example cases, graphs and reports. Uploads, edits and external lookups are disabled. Run PacketScope locally for the full workflow.</p></div>}
+        {runtime.error && <p role="alert" className="error">Cannot load API settings: {runtime.error}. Check the deployment API connection.</p>}
         {!isCapture && <div className="page-heading"><div><h1>{route === 'dashboard' ? 'Investigation overview' : title}</h1>
           <p>Start with the traffic. Follow the evidence.</p></div>
-          <label className={`button primary ${busy ? 'disabled' : ''}`}>{busy ? 'Importing…' : 'Import capture'}
-            <input type="file" accept=".pcap,.pcapng" disabled={busy} onChange={e => void upload(e.target.files?.[0])} /></label></div>}
+          {!readOnly && <label className={`button primary ${busy ? 'disabled' : ''}`}>{busy ? 'Importing…' : 'Import capture'}
+            <input type="file" accept=".pcap,.pcapng" disabled={busy} onChange={e => void upload(e.target.files?.[0])} /></label>}</div>}
         {error && <p role="alert" className="error">{error}</p>}
         {(section === 'dashboard' || (section === 'captures' && !id)) && <><State loading={loading} error={loadError} />
         {data && <>
@@ -93,5 +98,5 @@ export default function App() {
         {section === 'reports' && <><CapturePicker>{cid => <Reports captureId={cid} />}</CapturePicker><Reports /></>}
       </div>
     </main>
-  </div>;
+  </div></ReadOnlyContext.Provider>;
 }

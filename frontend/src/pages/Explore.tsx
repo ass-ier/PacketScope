@@ -5,6 +5,7 @@ import { api, bytes, date, post } from '../lib/api';
 import { type Capture, type Dashboard, type Page, type Row } from '../types';
 import { AttachToCase } from './Cases';
 import { Intelligence } from './Advanced';
+import { useReadOnly } from '../hooks/useReadOnly';
 
 export const columns: Record<string, string[]> = {
   packets: ['frame_number', 'timestamp', 'source_ip', 'destination_ip', 'protocol', 'length'],
@@ -99,6 +100,7 @@ export function Overview({ captureId }: { captureId?: string }) {
 
 export const tabs = ['Overview', 'Packets', 'Hosts', 'Flows', 'DNS', 'HTTP', 'TLS', 'IOCs', 'Findings', 'Timeline', 'Topology', 'ATT&CK', 'Graph', 'Files', 'Report'];
 export function CaptureHeader({ captureId, tab, onCompleted }: { captureId: string; tab: string; onCompleted: () => void }) {
+  const readOnly = useReadOnly();
   const [tick, setTick] = useState(0);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -120,14 +122,14 @@ export function CaptureHeader({ captureId, tab, onCompleted }: { captureId: stri
       <div className="capture-heading"><div><h1>{data.original_filename}</h1>
         <p>{data.file_type.toUpperCase()} · {bytes(data.file_size)} · {data.packet_count.toLocaleString()} packets · {data.duration.toFixed(3)}s</p></div>
         <Badge value={data.analysis_status} />
-        {['stored', 'failed'].includes(data.analysis_status) && <button className="primary" onClick={() => void analyze()}>{data.analysis_status === 'failed' ? 'Retry analysis' : 'Analyze capture'}</button>}
+        {!readOnly && ['stored', 'failed'].includes(data.analysis_status) && <button className="primary" onClick={() => void analyze()}>{data.analysis_status === 'failed' ? 'Retry analysis' : 'Analyze capture'}</button>}
       </div>
       <details className="identity"><summary>Capture identity and visibility</summary>
         <dl><dt>SHA-256</dt><dd className="mono">{data.sha256}</dd><dt>Capture ID</dt><dd>{data.id}</dd>
           <dt>First packet</dt><dd>{date(data.start_time)}</dd><dt>Last packet</dt><dd>{date(data.end_time)}</dd>
           <dt>Link types</dt><dd>{data.link_types.join(', ') || 'Awaiting analysis'}</dd></dl>
         <p>Original evidence is immutable. All timestamps are displayed in UTC.</p>
-        {!['queued', 'parsing', 'processing'].includes(data.analysis_status) && <>
+        {!readOnly && !['queued', 'parsing', 'processing'].includes(data.analysis_status) && <>
           <button onClick={() => setConfirmDelete(v => !v)}>Remove capture</button>
           {confirmDelete && <div className="warning"><p>Delete this capture and its analysis permanently? Linked cases or reports prevent deletion.</p>
             <button onClick={() => { void api(`/captures/${captureId}`, { method: 'DELETE' })

@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: 'demo.spec.ts',
   outputDir: '../artifacts/e2e-results',
   workers: 1,
   timeout: 90000,

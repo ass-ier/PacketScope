@@ -22,6 +22,9 @@ class LocalSafetyMiddleware:
         async def reject(status, detail):
             return await JSONResponse({"detail": detail}, status_code=status)(scope, receive, send)
 
+        if self.settings.demo_mode and method not in ("GET", "HEAD", "OPTIONS"):
+            return await reject(403, "Read-only synthetic demo: uploads, edits, analysis and external lookups are disabled")
+
         if method not in ("GET", "HEAD", "OPTIONS") and headers.get(b"origin"):
             try:
                 origin = urlsplit(headers[b"origin"].decode("ascii"))

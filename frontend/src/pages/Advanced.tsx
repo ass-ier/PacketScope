@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Empty, State, Table } from '../components/Common';
 import { useData } from '../hooks/useData';
-import { post } from '../lib/api';
+import { api, post } from '../lib/api';
 import { type Capture, type Page, type Row } from '../types';
 import { inspect } from './Explore';
+import { useReadOnly } from '../hooks/useReadOnly';
 
 export function Files({ captureId }: { captureId: string }) {
+  const readOnly = useReadOnly();
   const [refresh, setRefresh] = useState(0);
   const candidates = useData<Row[]>(`/captures/${captureId}/file-candidates`, refresh);
   const extracted = useData<Page>(`/captures/${captureId}/files`, refresh);
@@ -19,14 +21,15 @@ export function Files({ captureId }: { captureId: string }) {
   }
   return <>
     <section className="panel padded"><h2>Explicit file extraction</h2><p>Only complete, unambiguous HTTP/1 response bodies can be extracted. Content stays untrusted, is not decompressed, and is never executed.</p>
-      <label className="check"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} />I understand extracted content is untrusted evidence.</label>
+      {readOnly ? <p className="footnote">Complete benign text bodies were extracted during demo setup and are available below. New extraction is disabled in this shared preview.</p> :
+        <label className="check"><input type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} />I understand extracted content is untrusted evidence.</label>}
       {message && <p role={failed ? 'alert' : 'status'} className={failed ? 'error' : 'notice'}>{message}</p>}
     </section>
     <State loading={candidates.loading} error={candidates.error || extracted.error} />
     <section className="panel"><div className="section-heading"><h2>Complete HTTP bodies</h2><span>Up to 200 candidates</span></div>
       {candidates.data?.length ? <div className="table-scroll"><table><thead><tr><th>Request</th><th>Bytes</th><th>Content type</th><th>Action</th></tr></thead><tbody>
         {candidates.data.map(row => <tr key={row.id}><td><a href={`#/inspect/http/${row.id}`}>{String(row.host || 'Response only')}{String(row.uri || '')}</a></td><td>{String(row.body_size)}</td><td>{String(row.content_type || 'Not observed')}</td>
-          <td><button disabled={!ack || busy} onClick={() => void extract(row.id)}>Extract safely</button></td></tr>)}</tbody></table></div> :
+          <td>{readOnly ? <span className="muted">Read-only demo</span> : <button disabled={!ack || busy} onClick={() => void extract(row.id)}>Extract safely</button>}</td></tr>)}</tbody></table></div> :
         <Empty title="No complete extractable bodies">Encrypted, truncated, ambiguous and over-limit streams are not eligible.</Empty>}</section>
     {!!extracted.data?.items.length && <section className="panel"><div className="section-heading"><h2>Extracted evidence</h2></div>
       <Table rows={extracted.data.items} columns={['filename', 'size', 'sha256', 'mime_type']} onSelect={row => inspect(row, 'files')} />
@@ -47,7 +50,7 @@ export function Compare() {
   const [busy, setBusy] = useState(false);
   return <><State loading={loading} error={error} />
     <form className="panel toolbar" onSubmit={e => { e.preventDefault(); setBusy(true); setMessage('');
-      void post<typeof result>('/captures/compare', { baseline_id: a, comparison_id: b }).then(setResult)
+      void api<typeof result>(`/comparison?${new URLSearchParams({ baseline_id: a, comparison_id: b })}`).then(setResult)
         .catch((e: Error) => setMessage(e.message)).finally(() => setBusy(false)); }}>
       {([['Baseline capture', a, setA], ['Comparison capture', b, setB]] as const).map(([label, value, set]) =>
         <label className="grow" key={label}>{label}<select value={value} onChange={e => set(e.target.value)}>
@@ -63,6 +66,7 @@ export function Compare() {
 
 interface Provider { name: string; configured: boolean; enabled: boolean; types: string[] }
 export function Intelligence({ iocId }: { iocId?: string }) {
+  const readOnly = useReadOnly();
   const [refresh, setRefresh] = useState(0);
   const providers = useData<{ external_enabled: boolean; providers: Provider[]; notice: string }>('/intelligence/providers');
   const results = useData<Row[]>(iocId ? `/iocs/${iocId}/intelligence` : null, refresh);
@@ -73,7 +77,7 @@ export function Intelligence({ iocId }: { iocId?: string }) {
   return <section className="panel padded"><h2>Optional external intelligence</h2>
     <State loading={providers.loading} error={providers.error || results.error} />
     <p>{providers.data?.notice}</p>
-    {!providers.data?.external_enabled && <p className="notice">External intelligence is off. No indicator is shared. Enable with PACKETSCOPE_EXTERNAL_ENABLED=true only after reviewing the security documentation.</p>}
+    {!providers.data?.external_enabled && <p className="notice">{readOnly ? 'External intelligence is unavailable in the synthetic demo. No indicator is shared and no reputation results are fabricated.' : 'External intelligence is off. No indicator is shared. Enable with PACKETSCOPE_EXTERNAL_ENABLED=true only after reviewing the security documentation.'}</p>}
     {providers.data && <p className="footnote">{providers.data.providers.map(p => `${p.name}: ${p.configured ? 'available if enabled' : 'not configured'}`).join(' · ')}</p>}
     {iocId && providers.data?.external_enabled && <form onSubmit={e => { e.preventDefault(); setBusy(true); setMessage('');
       void post(`/iocs/${iocId}/lookup`, { provider, consent_to_share_indicator: consent }).then(() => { setRefresh(n => n + 1); setMessage('Provider response recorded.'); })

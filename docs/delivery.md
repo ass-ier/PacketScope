@@ -60,3 +60,12 @@ material findings were corrected and the same reviewer checked new screenshots:
 All three material review items are closed. The current information hierarchy
 is intentionally preserved. Automated accessibility checks supplement, rather
 than replace, this visual/usability review.
+
+## Follow-up: live demo deployment
+
+The subsequent Vercel/Render preview includes a separate seeded, read-only mode:
+16 captures, 9 findings, 3 cases, 64 real reports and 3 benign extracted files.
+Docker/Render configuration and Vercel API rewrite setup are documented in
+`deployment.md`. This adds 14 backend checks and one browser workflow, bringing
+current totals to 114 backend and 3 browser tests. The original ten-phase
+acceptance record above remains historical.
