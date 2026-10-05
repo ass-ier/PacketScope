@@ -1,0 +1,30 @@
+{
+  "name": "packetscope",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=../artifacts/pw-browsers playwright test"
+  },
+  "dependencies": {
+    "@xyflow/react": "12.6.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.15.29",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "19.1.6",
+    "@types/react-dom": "19.1.5",
+    "@vitejs/plugin-react": "4.5.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.8.3",
+    "vite": "6.4.3"
+  },
+  "overrides": { "rollup": "4.59.0", "postcss": "8.5.29" }
+}
