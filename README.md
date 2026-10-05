@@ -183,10 +183,10 @@ The browser suite starts/stops its own isolated localhost server on port 8766 an
 uses `artifacts/e2e-data`, never your ordinary evidence directory. Generated
 captures, browser binaries, traces and databases stay under ignored `artifacts/`.
 
-The final verification includes **99 backend tests** (10 use independent,
+The final verification includes **100 backend tests** (10 use independent,
 externally supplied synthetic acceptance captures), **2 Playwright workflows**,
 strict TypeScript/build, dependency audits and desktop/mobile axe checks.
-Without the optional independent fixture directory, 89 tests pass and 10 are
+Without the optional independent fixture directory, 90 tests pass and 10 are
 explicitly skipped. [Exact commands, coverage and acceptance](docs/testing.md).
 
 ## Limitations and roadmap

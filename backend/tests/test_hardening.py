@@ -152,6 +152,16 @@ def test_origin_filter_validation_and_pagination(client):
     assert client.post("/api/cases", json={"title":"x", "unexpected":True}).status_code == 422
 
 
+def test_impossible_original_frame_size_cannot_inflate_transfer_findings(client):
+    content = fixture.encode([(fixture.EPOCH, fixture.packet(flags=2))])
+    content = content[:36] + struct.pack("<I", 0xFFFFFFFF) + content[40:]
+    capture = client.post("/api/captures", files={"file":("invalid-wire-length.pcap", content)}).json()
+    client.post(f"/api/captures/{capture['id']}/analyze")
+    status = wait_status(client, capture["id"])
+    assert status["analysis_status"] == "failed" and "frame length" in status["error"]
+    assert not items(client, capture["id"], "findings")
+
+
 def test_queue_bound_and_http_responsiveness(tmp_path, monkeypatch):
     import threading
     import app.services.analysis as analysis

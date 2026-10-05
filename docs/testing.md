@@ -23,10 +23,10 @@ not touched. Repeated runs append their own clearly named synthetic cases.
 
 ## Recorded acceptance
 
-The final suite includes **99 passing backend tests**, including **10 independent
+The final suite includes **100 passing backend tests**, including **10 independent
 black-box acceptance cases**, and **2 passing Playwright tests**. The optional
 black-box fixture directory is not bundled: ordinary fresh-checkout runs report
-**89 passed / 10 skipped**. Code coverage was approximately **92% of backend
+**90 passed / 10 skipped**. Code coverage was approximately **92% of backend
 statements**, including complete exercised flow-builder and graph branches.
 
 One upstream Starlette test-client deprecation warns that `httpx2` will replace

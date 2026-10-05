@@ -42,7 +42,7 @@ def frames(path, settings):
                 sec, fraction, caplen, wirelen = struct.unpack(endian + "IIII", exact(handle, 16))
                 if fraction >= scale:
                     raise ValueError("Invalid PCAP fractional timestamp")
-                if caplen > settings.max_frame_bytes or caplen > wirelen:
+                if caplen > settings.max_frame_bytes or wirelen > settings.max_frame_bytes or caplen > wirelen:
                     raise ValueError("Invalid or over-limit PCAP frame length")
                 number += 1
                 if number > settings.max_packets:
@@ -121,7 +121,7 @@ def frames(path, settings):
                 if interface >= len(interfaces):
                     raise ValueError("PCAPNG packet references an unknown interface")
                 link, _, resolution, time_offset = interfaces[interface]
-                if caplen > settings.max_frame_bytes or caplen > wirelen:
+                if caplen > settings.max_frame_bytes or wirelen > settings.max_frame_bytes or caplen > wirelen:
                     raise ValueError("Invalid or over-limit PCAPNG frame length")
                 if handle.tell() + ((caplen + 3) // 4) * 4 > start + length - 4:
                     raise ValueError("Truncated PCAPNG packet")

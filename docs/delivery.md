@@ -15,7 +15,7 @@ push was used. Synthetic validation data is isolated under ignored artifacts.
 | 7 ATT&CK | Only supported evidence-backed candidate techniques, with confidence/rationale | T1046 and conditional weak T1071; no unsupported/empty mappings |
 | 8 Advanced | Compare captures, explicitly extract complete HTTP bodies, optional integrations | Exact differences, hashes, safe download, incomplete refusal, mocked provider gating, hash-only handoff |
 | 9 Reporting | Export real PDF/Markdown/JSON/STIX with evidence and analyst assessment | PDF parsing, STIX parsing, all-format browser generation, integrity and persistence |
-| 10 Hardening | Bounded input/jobs/reconstruction, recovery, documentation and refined accessible UX | 99 backend tests, 2 browser tests, ~92% statement coverage, lint/type/build/audits, measured 100k-packet workload |
+| 10 Hardening | Bounded input/jobs/reconstruction, recovery, documentation and refined accessible UX | 100 backend tests, 2 browser tests, ~92% statement coverage, lint/type/build/audits, measured 100k-packet workload |
 
 ## What is durable
 
