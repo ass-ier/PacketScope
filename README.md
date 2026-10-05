@@ -167,14 +167,16 @@ claim. Protocol-heavy captures can be slower. [Performance details](docs/testing
 Run from the repository root:
 
 ```sh
+mkdir -p artifacts
 cd backend
-../.venv/bin/pytest --cov=app --cov-report=term-missing
+../.venv/bin/pytest --cov=app --cov-report=term-missing --junitxml=../artifacts/backend-tests.xml
 ../.venv/bin/ruff check app tests migrations benchmark.py
 ../.venv/bin/pip-audit --progress-spinner=off
 cd ../frontend
 npm run typecheck
 npm run build
 npm audit --audit-level=moderate
+npm audit --json > ../artifacts/npm-audit.json
 PLAYWRIGHT_BROWSERS_PATH=../artifacts/pw-browsers npx playwright install chromium
 npm run test:e2e
 ```
@@ -188,6 +190,10 @@ externally supplied synthetic acceptance captures), **2 Playwright workflows**,
 strict TypeScript/build, dependency audits and desktop/mobile axe checks.
 Without the optional independent fixture directory, 90 tests pass and 10 are
 explicitly skipped. [Exact commands, coverage and acceptance](docs/testing.md).
+
+The current full npm audit JSON and all-100-case JUnit verification are retained
+under `artifacts/`. An earlier pre-fix audit with eight high findings is preserved
+separately as `artifacts/npm-audit.pre-fix.json`; it is not the final audit result.
 
 ## Limitations and roadmap
 

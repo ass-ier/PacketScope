@@ -5,14 +5,16 @@
 From the repository root, after installation:
 
 ```sh
+mkdir -p artifacts
 cd backend
-../.venv/bin/pytest --cov=app --cov-report=term-missing
+../.venv/bin/pytest --cov=app --cov-report=term-missing --junitxml=../artifacts/backend-tests.xml
 ../.venv/bin/ruff check app tests migrations benchmark.py
 ../.venv/bin/pip-audit --progress-spinner=off
 cd ../frontend
 npm run typecheck
 npm run build
 npm audit --audit-level=moderate
+npm audit --json > ../artifacts/npm-audit.json
 PLAYWRIGHT_BROWSERS_PATH=../artifacts/pw-browsers npx playwright install chromium
 npm run test:e2e
 ```
@@ -70,6 +72,38 @@ cd backend
 PACKETSCOPE_ACCEPTANCE_FIXTURES=/absolute/path/to/acceptance-captures \
   ../.venv/bin/pytest tests/test_external_acceptance.py
 ```
+
+### Machine-readable final verification
+
+Verification was refreshed on **2026-10-06, local workstation time**, after
+discovering that the original `artifacts/npm-audit.json` still contained the
+pre-fix dependency audit. No dependency changes were needed: both fresh
+`npm audit --audit-level=moderate` and `npm audit --json` exited **0**.
+The latter command's full output is now persisted, not replaced by a hand-written
+summary. The original failing JSON remains available for provenance.
+
+| Artifact | Current recorded result |
+|---|---|
+| `artifacts/npm-audit.json` | Full npm audit v2 JSON: info 0, low 0, moderate 0, high 0, critical 0, total 0; 179 dependencies |
+| `artifacts/npm-audit.pre-fix.json` | Original stale/pre-fix output: high 8, total 8 |
+| `artifacts/backend-tests.xml` | 100 unique test cases, 0 failures, 0 errors, 0 skipped; includes all 10 independent acceptance cases |
+
+The JUnit run started at `2026-10-06T00:04:10.100667+03:00` and reported
+100 passed in 15.17 seconds (JUnit suite time: 15.122 seconds). The existing
+nonfailing Starlette transport deprecation remains the only warning.
+
+To reproduce the all-100-case artifact rather than the default optional skips:
+
+```sh
+mkdir -p artifacts
+cd backend
+PACKETSCOPE_ACCEPTANCE_FIXTURES=/absolute/path/to/acceptance-captures \
+  ../.venv/bin/pytest --junitxml=../artifacts/backend-tests.xml
+```
+
+Artifacts are local/ignored and refreshed by these commands; a new run may
+change their timestamps or findings. Inspect audit exit codes and the complete
+JSON rather than treating this recorded clean result as a permanent guarantee.
 
 ## Measured workload
 
